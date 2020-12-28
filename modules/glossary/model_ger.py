@@ -45,6 +45,6 @@ class ModelGer(Model):
         except AttributeError:
             return '', []
 
-from fake_useragent import UserAgent
-
-print(ModelGer.duden_de('Kältebus', UserAgent().ie))
+# from fake_useragent import UserAgent
+#
+# print(ModelGer.duden_de('Kältebus', UserAgent().ie))

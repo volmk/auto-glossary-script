@@ -3,6 +3,7 @@ from telebot.apihelper import ApiException
 
 import os
 
+import asyncio
 from dotenv import load_dotenv
 
 from modules.glossary.controller import Controller
@@ -42,10 +43,11 @@ def __send_msg(uid, text, **options):
 
 
 def __send_info(msg):
-    __send_msg(MEDIA_CHAT,
-               f'<a href="tg://user?id={msg.from_user.id}">{msg.from_user.first_name}</a>\n\n'
-               f'{msg.text}',
-               parse_mode='html')
+    if not DEV_MODE:
+        __send_msg(MEDIA_CHAT,
+                   f'<a href="tg://user?id={msg.from_user.id}">{msg.from_user.first_name}</a>\n\n'
+                   f'{msg.text}',
+                   parse_mode='html')
 
 
 @_bot.message_handler(commands=['en'])
@@ -65,7 +67,9 @@ def en(message):
 
         words_arr = sorted(map(normalize, text.split(',')))
         controller = Controller(ModelEng(), ViewHtml())
-        send_dict(cid, 'Англійська', controller, words_arr)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(send_dict(cid, 'Англійська', controller, words_arr))
 
 
 @_bot.message_handler(commands=['ge'])
@@ -85,7 +89,9 @@ def ge(message):
 
         words_arr = sorted(map(normalize, text.split(',')))
         controller = Controller(ModelGer(), ViewHtml())
-        send_dict(cid, 'Німецька', controller, words_arr)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(send_dict(cid, 'Німецька', controller, words_arr))
 
 
 @_bot.message_handler(func=lambda message: True, content_types=['text'])
@@ -104,7 +110,7 @@ def __send_start_info(cid):
 
 
 @api_err_wrapper
-def send_dict(cid, lang, controller, words_arr):
+async def send_dict(cid, lang, controller, words_arr):
     __send_msg(cid, f'{lang} | Отримано слів: {len(words_arr)}')
     _bot.send_chat_action(cid, 'typing')
 
